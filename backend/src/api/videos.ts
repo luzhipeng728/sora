@@ -1,4 +1,4 @@
-import { Router, Request, Response } from 'express';
+import { Router } from 'express';
 import { VideoModel } from '../models/Video';
 import { VideoJobModel } from '../models/VideoJob';
 import { VideoGenerationService } from '../services/VideoGenerationService';

@@ -1,4 +1,4 @@
-import fetch from 'node-fetch';
+import fetch, { Response as FetchResponse } from 'node-fetch';
 import { VideoJobModel } from '../models/VideoJob';
 import { VideoModel } from '../models/Video';
 import { config } from '../config';
@@ -101,7 +101,7 @@ export class VideoGenerationService {
       console.log(`[Background] Job ${jobId} using model: ${model}`);
 
       // Call Sora API with retry logic for 500/503 errors
-      let response: Response;
+      let response: FetchResponse;
       let retries = 0;
       const maxRetries = 5; // Retry up to 5 times for 500/503
 

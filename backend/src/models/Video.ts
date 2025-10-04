@@ -59,7 +59,7 @@ export class VideoModel {
         thumbnailUrl: data.thumbnailUrl,
         duration: data.duration,
         status: data.status || 'completed',
-        metadata: data.metadata,
+        metadata: data.metadata || undefined,
       },
     });
   }
@@ -117,9 +117,13 @@ export class VideoModel {
     id: string,
     data: Partial<Omit<CreateVideoData, 'userId'>>
   ): Promise<Video> {
+    const updateData: any = { ...data };
+    if (updateData.metadata === null) {
+      updateData.metadata = undefined;
+    }
     return prisma.video.update({
       where: { id },
-      data,
+      data: updateData,
     });
   }
 
