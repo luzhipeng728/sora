@@ -10,8 +10,9 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-sora_db}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+    # Database not exposed externally, only accessible within Docker network
+    expose:
+      - "5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-sora}"]
       interval: 10s
@@ -39,8 +40,9 @@ services:
       SORA_API_URL: ${SORA_API_URL}
       SORA_API_TOKEN: ${SORA_API_TOKEN}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost}
-    ports:
-      - "${BACKEND_PORT:-3000}:3000"
+    # Backend not exposed, accessed via nginx proxy
+    expose:
+      - "3000"
     volumes:
       - backend_logs:/app/logs
     networks:
@@ -52,17 +54,19 @@ services:
       retries: 3
       start_period: 40s
 
-  # Frontend
+  # Frontend (Nginx with reverse proxy to backend)
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        VITE_API_URL: ${VITE_API_URL:-http://localhost:3000}
+        # Empty API URL means frontend will use relative paths, nginx will proxy to backend
+        VITE_API_URL: ""
     container_name: sora-frontend
     restart: unless-stopped
     depends_on:
       - backend
+    # Only expose frontend port - it proxies to backend internally
     ports:
       - "${FRONTEND_PORT:-80}:80"
     networks:

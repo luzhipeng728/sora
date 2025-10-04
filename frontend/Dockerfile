@@ -12,8 +12,8 @@ RUN yarn install --frozen-lockfile
 # Copy source code
 COPY . .
 
-# Build argument for API URL
-ARG VITE_API_URL=http://localhost:3000
+# Build argument for API URL (empty string means use relative path via nginx proxy)
+ARG VITE_API_URL=
 ENV VITE_API_URL=$VITE_API_URL
 
 # Build Vite app
