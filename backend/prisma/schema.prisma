@@ -1,0 +1,90 @@
+// Prisma schema for Sora Video Generation Platform
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  username     String?
+  avatarUrl    String?   @map("avatar_url")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  videos       Video[]
+  videoJobs    VideoJob[]
+
+  @@index([email])
+  @@index([createdAt])
+  @@map("users")
+}
+
+model Video {
+  id           String      @id @default(uuid())
+  userId       String      @map("user_id")
+  prompt       String
+  orientation  Orientation
+  modelUsed    String?     @map("model_used")
+  videoUrl     String      @map("video_url")
+  thumbnailUrl String?     @map("thumbnail_url")
+  duration     Int?
+  status       VideoStatus @default(completed)
+  metadata     Json?
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  videoJob     VideoJob?
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([userId, createdAt])
+  @@map("videos")
+}
+
+model VideoJob {
+  id            String      @id @default(uuid())
+  userId        String      @map("user_id")
+  prompt        String
+  orientation   Orientation
+  status        JobStatus   @default(pending)
+  progress      Int         @default(0)
+  errorMessage  String?     @map("error_message")
+  externalJobId String?     @map("external_job_id")
+  videoId       String?     @unique @map("video_id")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+  completedAt   DateTime?   @map("completed_at")
+
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video         Video?      @relation(fields: [videoId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([status])
+  @@index([userId, status, createdAt])
+  @@map("video_jobs")
+}
+
+enum Orientation {
+  portrait
+  landscape
+}
+
+enum VideoStatus {
+  completed
+  failed
+}
+
+enum JobStatus {
+  pending
+  processing
+  completed
+  failed
+}

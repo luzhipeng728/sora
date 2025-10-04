@@ -1,0 +1,368 @@
+openapi: 3.0.0
+info:
+  title: Video Generation Platform - Video API
+  version: 1.0.0
+  description: Video generation and retrieval endpoints
+
+paths:
+  /api/videos:
+    get:
+      summary: Get user's videos
+      tags:
+        - Videos
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [completed, failed]
+      responses:
+        '200':
+          description: List of user's videos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  videos:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Video'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      summary: Create a new video generation job
+      tags:
+        - Videos
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - prompt
+              properties:
+                prompt:
+                  type: string
+                  minLength: 1
+                  maxLength: 1000
+                  example: "@sama celebrating at Tiananmen Square"
+                orientation:
+                  type: string
+                  enum: [portrait, landscape]
+                  default: portrait
+                  example: portrait
+      responses:
+        '202':
+          description: Video generation job created and queued
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  job:
+                    $ref: '#/components/schemas/VideoJob'
+                  streamUrl:
+                    type: string
+                    description: SSE endpoint URL for progress updates
+                    example: /api/videos/jobs/550e8400-e29b-41d4-a716-446655440000/stream
+        '400':
+          description: Invalid request (prompt too long, invalid orientation)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/videos/{videoId}:
+    get:
+      summary: Get specific video details
+      tags:
+        - Videos
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: videoId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Video details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Video'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Video belongs to another user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Video not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/videos/jobs/{jobId}:
+    get:
+      summary: Get video job status
+      tags:
+        - Video Jobs
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Job details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideoJob'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Job belongs to another user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Job not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/videos/jobs/{jobId}/stream:
+    get:
+      summary: Stream video generation progress (SSE)
+      tags:
+        - Video Jobs
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Server-Sent Events stream
+          content:
+            text/event-stream:
+              schema:
+                type: object
+                description: |
+                  SSE events with the following types:
+                  - progress: {"progress": 45, "status": "processing"}
+                  - complete: {"videoId": "uuid", "videoUrl": "https://..."}
+                  - error: {"error": "Error message"}
+              examples:
+                progress:
+                  value: |
+                    event: progress
+                    data: {"progress": 45, "status": "processing"}
+
+                complete:
+                  value: |
+                    event: complete
+                    data: {"videoId": "550e8400-e29b-41d4-a716-446655440000", "videoUrl": "https://videos.openai.com/..."}
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Job belongs to another user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Job not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    Video:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        userId:
+          type: string
+          format: uuid
+          example: 660e8400-e29b-41d4-a716-446655440000
+        prompt:
+          type: string
+          example: "@sama celebrating at Tiananmen Square"
+        orientation:
+          type: string
+          enum: [portrait, landscape]
+          example: portrait
+        modelUsed:
+          type: string
+          example: sora_video2-hd-portrait
+        videoUrl:
+          type: string
+          format: uri
+          example: https://videos.openai.com/vg-assets/...
+        thumbnailUrl:
+          type: string
+          format: uri
+          nullable: true
+          example: https://videos.openai.com/thumbnails/...
+        duration:
+          type: integer
+          nullable: true
+          description: Video duration in seconds
+          example: 6
+        status:
+          type: string
+          enum: [completed, failed]
+          example: completed
+        metadata:
+          type: object
+          nullable: true
+          description: Additional metadata from API response
+        createdAt:
+          type: string
+          format: date-time
+          example: 2025-10-04T10:30:00Z
+
+    VideoJob:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        userId:
+          type: string
+          format: uuid
+          example: 660e8400-e29b-41d4-a716-446655440000
+        prompt:
+          type: string
+          example: "@sama celebrating at Tiananmen Square"
+        orientation:
+          type: string
+          enum: [portrait, landscape]
+          example: portrait
+        status:
+          type: string
+          enum: [pending, processing, completed, failed]
+          example: processing
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+          example: 45
+        errorMessage:
+          type: string
+          nullable: true
+          example: null
+        videoId:
+          type: string
+          format: uuid
+          nullable: true
+          example: null
+        createdAt:
+          type: string
+          format: date-time
+          example: 2025-10-04T10:30:00Z
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+          example: null
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 20
+        total:
+          type: integer
+          example: 42
+        totalPages:
+          type: integer
+          example: 3
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Invalid video ID
+        code:
+          type: string
+          example: NOT_FOUND
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
