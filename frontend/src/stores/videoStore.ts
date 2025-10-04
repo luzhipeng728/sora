@@ -173,17 +173,16 @@ export const useVideoStore = create<VideoState>((set, get) => ({
       createdAt: new Date().toISOString(),
     };
 
-    // Update job status in activeJobs
+    // Clean up and remove job from activeJobs
+    if (activeJob.cleanup) {
+      activeJob.cleanup();
+    }
+
     set((state) => {
       const newActiveJobs = new Map(state.activeJobs);
-      const job = newActiveJobs.get(jobId);
-      if (job) {
-        newActiveJobs.set(jobId, {
-          ...job,
-          job: { ...job.job, status: 'completed', videoId },
-          progress: 100,
-        });
-      }
+      // Remove completed job from activeJobs
+      newActiveJobs.delete(jobId);
+
       return {
         activeJobs: newActiveJobs,
         videos: [newVideo, ...state.videos],
