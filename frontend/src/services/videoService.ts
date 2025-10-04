@@ -6,7 +6,7 @@ import type {
   Video,
   VideoJob,
   GetVideosParams,
-} from '../../../shared/types';
+} from '../shared/types';
 
 export class VideoService {
   /**

@@ -1,5 +1,5 @@
 import React from 'react';
-import type { OrientationType } from '../../../shared/types';
+import type { OrientationType } from '../shared/types';
 
 interface OrientationSelectorProps {
   value: OrientationType;

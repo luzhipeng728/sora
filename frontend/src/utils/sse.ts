@@ -1,5 +1,5 @@
 import { AuthService } from '../services/authService';
-import type { SSEProgressEvent, SSECompleteEvent, SSEErrorEvent } from '../../../shared/types';
+import type { SSEProgressEvent, SSECompleteEvent, SSEErrorEvent } from '../shared/types';
 
 export type SSEEventHandler = {
   onProgress?: (data: SSEProgressEvent) => void;
@@ -18,8 +18,6 @@ export function createEventSource(
   url: string,
   handlers: SSEEventHandler
 ): EventSource {
-  const token = AuthService.getToken();
-
   // EventSource doesn't support custom headers, so we need to pass token via query param
   // or use fetch with ReadableStream instead
   // For now, we'll use a workaround with a custom implementation
@@ -141,7 +139,7 @@ export async function createFetchSSE(
             if (!line.trim()) continue;
 
             if (line.startsWith('event: ')) {
-              const eventType = line.slice(7).trim();
+              // const eventType = line.slice(7).trim();
               continue;
             }
 

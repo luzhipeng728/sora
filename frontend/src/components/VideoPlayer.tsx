@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import type { Video } from '../../../shared/types';
+import type { Video } from '../shared/types';
 
 interface VideoPlayerProps {
   video: Video;

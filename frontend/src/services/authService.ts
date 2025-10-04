@@ -1,5 +1,5 @@
 import api from './api';
-import type { User, AuthResponse, RegisterRequest, LoginRequest } from '../../../shared/types';
+import type { User, AuthResponse, RegisterRequest, LoginRequest } from '../shared/types';
 
 export class AuthService {
   /**

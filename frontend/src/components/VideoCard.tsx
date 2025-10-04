@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Video } from '../../../shared/types';
+import type { Video } from '../shared/types';
 
 interface VideoCardProps {
   video: Video;

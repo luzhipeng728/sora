@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { AuthService } from '../services/authService';
-import type { User, RegisterRequest, LoginRequest } from '../../../shared/types';
+import type { User, RegisterRequest, LoginRequest } from '../shared/types';
 
 interface UserState {
   user: User | null;

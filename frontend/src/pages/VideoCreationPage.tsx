@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useVideoStore } from '../stores/videoStore';
 import { useUserStore } from '../stores/userStore';
 import { OrientationSelector } from '../components/OrientationSelector';
-import type { OrientationType, Video } from '../../../shared/types';
+import type { OrientationType, Video } from '../shared/types';
 import cameoData from '../data/composer_profiles.json';
 
 interface CameoProfile {
@@ -29,7 +29,7 @@ export const VideoCreationPage: React.FC = () => {
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  const cameos: CameoProfile[] = cameoData.composer_profiles.map(p => ({
+  const cameos: CameoProfile[] = cameoData.composer_profiles.map((p: any) => ({
     username: p.username,
     display_name: p.display_name,
     profile_picture_url: p.profile_picture_url,

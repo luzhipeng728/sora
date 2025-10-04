@@ -7,7 +7,7 @@ import type {
   CreateVideoRequest,
   GetVideosParams,
   OrientationType,
-} from '../../../shared/types';
+} from '../shared/types';
 
 interface ActiveJob {
   job: VideoJob;
@@ -158,7 +158,7 @@ export const useVideoStore = create<VideoState>((set, get) => ({
     });
   },
 
-  completeJob: (jobId: string, videoId: string, videoUrl: string) => {
+  completeJob: (jobId: string, _videoId: string, _videoUrl: string) => {
     const activeJob = get().activeJobs.get(jobId);
     if (!activeJob) return;
 

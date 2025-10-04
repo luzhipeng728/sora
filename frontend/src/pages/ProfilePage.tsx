@@ -3,7 +3,7 @@ import { useUserStore } from '../stores/userStore';
 import { useVideoStore } from '../stores/videoStore';
 import { VideoCard } from '../components/VideoCard';
 import { VideoPlayer } from '../components/VideoPlayer';
-import type { Video } from '../../../shared/types';
+import type { Video } from '../shared/types';
 
 export const ProfilePage: React.FC = () => {
   const { user, logout } = useUserStore();
