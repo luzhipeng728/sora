@@ -60,36 +60,22 @@ router.post(
 );
 
 /**
- * GET /api/videos/:videoId
- * Get specific video details
+ * GET /api/videos/jobs
+ * Get user's active jobs (pending or processing)
  */
 router.get(
-  '/:videoId',
+  '/jobs',
   authMiddleware,
   asyncHandler(async (req, res) => {
     const userId = req.userId!;
-    const { videoId } = req.params;
 
-    const video = await VideoModel.findById(videoId);
+    console.log(`[API] GET /api/videos/jobs - User: ${userId}`);
 
-    if (!video) {
-      res.status(404).json({
-        error: 'Video not found',
-        code: 'NOT_FOUND',
-      });
-      return;
-    }
+    const jobs = await VideoJobModel.getActiveJobs(userId);
 
-    // Check ownership
-    if (video.userId !== userId) {
-      res.status(403).json({
-        error: 'You do not have permission to access this video',
-        code: 'FORBIDDEN',
-      });
-      return;
-    }
+    console.log(`[API] Found ${jobs.length} active jobs for user ${userId}`);
 
-    res.status(200).json(video);
+    res.status(200).json(jobs);
   })
 );
 
@@ -128,6 +114,40 @@ router.get(
     console.log(`[API] Job ${jobId} status: ${job.status}, progress: ${job.progress}%`);
 
     res.status(200).json(job);
+  })
+);
+
+/**
+ * GET /api/videos/:videoId
+ * Get specific video details
+ */
+router.get(
+  '/:videoId',
+  authMiddleware,
+  asyncHandler(async (req, res) => {
+    const userId = req.userId!;
+    const { videoId } = req.params;
+
+    const video = await VideoModel.findById(videoId);
+
+    if (!video) {
+      res.status(404).json({
+        error: 'Video not found',
+        code: 'NOT_FOUND',
+      });
+      return;
+    }
+
+    // Check ownership
+    if (video.userId !== userId) {
+      res.status(403).json({
+        error: 'You do not have permission to access this video',
+        code: 'FORBIDDEN',
+      });
+      return;
+    }
+
+    res.status(200).json(video);
   })
 );
 

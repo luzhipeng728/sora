@@ -32,6 +32,7 @@ interface VideoState {
   createVideo: (prompt: string, orientation?: OrientationType) => Promise<VideoJob>;
   fetchVideos: (params?: GetVideosParams) => Promise<void>;
   fetchVideo: (videoId: string) => Promise<void>;
+  fetchActiveJobs: () => Promise<void>;
   addActiveJob: (job: VideoJob) => void;
   startPolling: (jobId: string) => void;
   updateJobProgress: (jobId: string, progress: number) => void;
@@ -161,18 +162,6 @@ export const useVideoStore = create<VideoState>((set, get) => ({
     const activeJob = get().activeJobs.get(jobId);
     if (!activeJob) return;
 
-    // Create video object
-    const newVideo: Video = {
-      id: videoId,
-      userId: '',
-      prompt: activeJob.job.prompt,
-      orientation: activeJob.job.orientation,
-      modelUsed: '',
-      videoUrl,
-      status: 'completed',
-      createdAt: new Date().toISOString(),
-    };
-
     // Clean up and remove job from activeJobs
     if (activeJob.cleanup) {
       activeJob.cleanup();
@@ -185,9 +174,11 @@ export const useVideoStore = create<VideoState>((set, get) => ({
 
       return {
         activeJobs: newActiveJobs,
-        videos: [newVideo, ...state.videos],
       };
     });
+
+    // Fetch videos to get the newly created video from backend
+    get().fetchVideos();
   },
 
   failJob: (jobId: string, error: string) => {
@@ -242,6 +233,34 @@ export const useVideoStore = create<VideoState>((set, get) => ({
         isLoading: false,
         error: error.response?.data?.error || 'Failed to fetch videos',
       });
+    }
+  },
+
+  fetchActiveJobs: async () => {
+    try {
+      const token = AuthService.getToken();
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/videos/jobs`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const jobs: VideoJob[] = await response.json();
+
+        console.log(`[VideoStore] Fetched ${jobs.length} active jobs`);
+
+        // Add each active job and start polling
+        jobs.forEach(job => {
+          if (job.status === 'processing' || job.status === 'pending') {
+            console.log(`[VideoStore] Restoring job ${job.id} (${job.status}, ${job.progress}%)`);
+            get().addActiveJob(job);
+            get().startPolling(job.id);
+          }
+        });
+      }
+    } catch (error) {
+      console.error('[VideoStore] Failed to fetch active jobs:', error);
     }
   },
 
