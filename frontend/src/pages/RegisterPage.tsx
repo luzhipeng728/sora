@@ -55,18 +55,22 @@ export const RegisterPage: React.FC = () => {
     <div className="auth-page">
       <div className="auth-container">
         <div className="auth-card">
-          <h1 className="auth-title">Create Account</h1>
-          <p className="auth-subtitle">Sign up to start generating videos</p>
+          <h1 className="auth-title">创建账号</h1>
+          <p className="auth-subtitle">注册开始生成视频</p>
 
           {(error || validationError) && (
             <div className="error-message">
-              {validationError || error}
+              {validationError === 'Password must be at least 8 characters long' ? '密码至少需要 8 个字符' :
+               validationError === 'Passwords do not match' ? '两次密码输入不一致' :
+               error === 'Email already exists' ? '该邮箱已被注册' :
+               error === 'Network Error' ? '网络连接失败，请检查后端服务' :
+               validationError || error}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="auth-form">
             <div className="form-group">
-              <label htmlFor="email">Email</label>
+              <label htmlFor="email">邮箱</label>
               <input
                 type="email"
                 id="email"
@@ -74,27 +78,27 @@ export const RegisterPage: React.FC = () => {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                placeholder="you@example.com"
+                placeholder="your@email.com"
                 autoComplete="email"
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="username">Username (optional)</label>
+              <label htmlFor="username">用户名（可选）</label>
               <input
                 type="text"
                 id="username"
                 name="username"
                 value={formData.username}
                 onChange={handleChange}
-                placeholder="Your display name"
+                placeholder="显示名称"
                 maxLength={50}
                 autoComplete="username"
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="password">Password</label>
+              <label htmlFor="password">密码</label>
               <input
                 type="password"
                 id="password"
@@ -102,14 +106,14 @@ export const RegisterPage: React.FC = () => {
                 value={formData.password}
                 onChange={handleChange}
                 required
-                placeholder="At least 8 characters"
+                placeholder="至少 8 个字符"
                 minLength={8}
                 autoComplete="new-password"
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="confirmPassword">Confirm Password</label>
+              <label htmlFor="confirmPassword">确认密码</label>
               <input
                 type="password"
                 id="confirmPassword"
@@ -117,7 +121,7 @@ export const RegisterPage: React.FC = () => {
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 required
-                placeholder="Confirm your password"
+                placeholder="再次输入密码"
                 autoComplete="new-password"
               />
             </div>
@@ -127,15 +131,15 @@ export const RegisterPage: React.FC = () => {
               className="btn btn-primary"
               disabled={isLoading}
             >
-              {isLoading ? 'Creating account...' : 'Sign Up'}
+              {isLoading ? '注册中...' : '注册'}
             </button>
           </form>
 
           <div className="auth-footer">
             <p>
-              Already have an account?{' '}
+              已有账号？{' '}
               <Link to="/login" className="auth-link">
-                Sign in
+                立即登录
               </Link>
             </p>
           </div>

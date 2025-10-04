@@ -37,18 +37,21 @@ export const LoginPage: React.FC = () => {
     <div className="auth-page">
       <div className="auth-container">
         <div className="auth-card">
-          <h1 className="auth-title">Welcome Back</h1>
-          <p className="auth-subtitle">Sign in to continue to Sora</p>
+          <h1 className="auth-title">欢迎回来</h1>
+          <p className="auth-subtitle">登录继续使用 Sora 视频生成</p>
 
           {error && (
             <div className="error-message">
-              {error}
+              {error === 'Invalid credentials' ? '邮箱或密码错误' :
+               error === 'User not found' ? '用户不存在' :
+               error === 'Network Error' ? '网络连接失败，请检查后端服务' :
+               error}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="auth-form">
             <div className="form-group">
-              <label htmlFor="email">Email</label>
+              <label htmlFor="email">邮箱</label>
               <input
                 type="email"
                 id="email"
@@ -56,13 +59,13 @@ export const LoginPage: React.FC = () => {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                placeholder="you@example.com"
+                placeholder="your@email.com"
                 autoComplete="email"
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="password">Password</label>
+              <label htmlFor="password">密码</label>
               <input
                 type="password"
                 id="password"
@@ -70,7 +73,7 @@ export const LoginPage: React.FC = () => {
                 value={formData.password}
                 onChange={handleChange}
                 required
-                placeholder="Enter your password"
+                placeholder="请输入密码"
                 autoComplete="current-password"
               />
             </div>
@@ -80,15 +83,15 @@ export const LoginPage: React.FC = () => {
               className="btn btn-primary"
               disabled={isLoading}
             >
-              {isLoading ? 'Signing in...' : 'Sign In'}
+              {isLoading ? '登录中...' : '登录'}
             </button>
           </form>
 
           <div className="auth-footer">
             <p>
-              Don't have an account?{' '}
+              还没有账号？{' '}
               <Link to="/register" className="auth-link">
-                Sign up
+                立即注册
               </Link>
             </p>
           </div>
