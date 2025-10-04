@@ -69,5 +69,4 @@ pm2.log
 prisma/migrations/**/migration.sql.bak
 
 # Custom
-composer_profiles.json
 screen_shoot/
